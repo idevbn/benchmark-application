@@ -1,6 +1,8 @@
 package com.backend.plnapi.controllers;
 
 import com.backend.plnapi.clients.CovidApiClient;
+import com.backend.plnapi.dtos.CovidDataDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,7 +21,7 @@ public class PlnApiCovidController {
     }
 
     @GetMapping(value = "/covid")
-    public ResponseEntity<Object> getAllCovidData(
+    public ResponseEntity<CovidDataDTO[]> getAllCovidData(
             @RequestParam(required = false)
             final String country,
             @DateTimeFormat(pattern = "yyyy-MM-dd")
@@ -31,7 +33,7 @@ public class PlnApiCovidController {
             final String county,
             @RequestParam(required = false)
             final String type
-    ) {
+    ) throws JsonProcessingException {
         return this.covidApiClient.getAllCovidData(
                 country, date, region, county, type
         );
