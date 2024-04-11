@@ -34,10 +34,12 @@ public class MongoConfig extends AbstractMongoClientConfiguration {
     }
 
     private String getUri() {
-        final String pattern = "mongodb://%s:%s/%s";
+        final String pattern = "mongodb://%s:%S@%s:%s/";
 
         return String.format(
                 pattern,
+                this.mongoDatabaseCredentials.getUsername(),
+                this.mongoDatabaseCredentials.getPassword(),
                 this.mongoDatabaseCredentials.getHostname(),
                 this.mongoDatabaseCredentials.getPort(),
                 this.getDatabaseName()
