@@ -1,8 +1,12 @@
 package com.backend.plnapi.clients;
 
 import com.backend.plnapi.beans.ApiCredentials;
+import com.backend.plnapi.dtos.CovidDataCountryDTO;
 import com.backend.plnapi.dtos.CovidDataDTO;
+import com.backend.plnapi.dtos.CovidDataDefaultDTO;
 import com.backend.plnapi.services.UtilsService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -28,14 +32,13 @@ public class CovidApiClient {
         this.utilsService = utilsService;
         this.apiCredentials = apiCredentials;
     }
-    public ResponseEntity<Object> getAllCovidData(final String country,
-                                                  final LocalDate date,
-                                                  final String region,
-                                                  final String county,
-                                                  final String type) {
-
-        ResponseEntity<CovidDataDTO[]> result = null;
-
+    public ResponseEntity<CovidDataDTO[]> getAllCovidData(
+            final String country,
+            final LocalDate date,
+            final String region,
+            final String county,
+            final String type
+    ) throws JsonProcessingException {
         final String url = this.apiCredentials.getApiCovidRequestUrl()
                 + this.utilsService.createUrl(
                 country, date, region, county, type
@@ -48,11 +51,34 @@ public class CovidApiClient {
         headers.set("X-Api-Key", this.apiCredentials.getApiKey());
         final HttpEntity<String> requestEntity = new HttpEntity<>("parameters", headers);
 
-        result = this.restTemplate
-                .exchange(url, HttpMethod.GET, requestEntity, CovidDataDTO[].class);
+        final ResponseEntity<String> response = this.restTemplate
+                .exchange(url, HttpMethod.GET, requestEntity, String.class);
+
+        final ObjectMapper mapper = new ObjectMapper();
+
+        CovidDataDTO[] result;
+
+        if (country != null) {
+            result = mapper.readValue(response.getBody(), CovidDataCountryDTO[].class);
+        } else {
+            result = mapper.readValue(response.getBody(), CovidDataDefaultDTO[].class);
+        }
 
         log.info("Ending request /covid ");
-        return ResponseEntity.status(HttpStatus.OK).body(result.getBody());
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
+
+    /**
+     * Método que recupera dados da API externa referentes a filtagem por
+     * um país.
+     */
+    public CovidDataDTO getDataByCountry(final String countryName) throws JsonProcessingException {
+        final ResponseEntity<CovidDataDTO[]> dataFromCountry = this
+                .getAllCovidData(countryName, null, null, null, null);
+
+        final CovidDataDTO[] dataBody = dataFromCountry.getBody();
+
+        return dataBody[0];
     }
 
 }
