@@ -11,6 +11,6 @@ public class ResultadosDTO {
     private Map<String, TotalCasosDTO> total;
 
     @JsonProperty(value = "new")
-    private Map<String, TotalCasosDTO> newCases;
+    private Map<String, NovosCasosDTO> newCases;
 
 }
