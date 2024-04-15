@@ -1,16 +1,15 @@
 package com.backend.plnapi.services.impl;
 
 import com.backend.plnapi.clients.CovidApiClient;
-import com.backend.plnapi.dtos.CovidDataCountryDTO;
-import com.backend.plnapi.dtos.CovidDataDTO;
-import com.backend.plnapi.dtos.ResultadosDTO;
-import com.backend.plnapi.dtos.TotalCasosDTO;
+import com.backend.plnapi.dtos.*;
+import com.backend.plnapi.exceptions.BenchmarkNotFoundException;
 import com.backend.plnapi.models.Benchmark;
 import com.backend.plnapi.repositories.BenchmarkRepository;
 import com.backend.plnapi.services.BenchmarkService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Comparator;
 import java.util.HashMap;
 
@@ -21,8 +20,10 @@ public class BenchmarkServiceImpl implements BenchmarkService {
     private final BenchmarkRepository benchmarkRepository;
     private final CovidApiClient covidApiClient;
 
-    public BenchmarkServiceImpl(final BenchmarkRepository benchmarkRepository,
-                                final CovidApiClient covidApiClient) {
+    public BenchmarkServiceImpl(
+            final BenchmarkRepository benchmarkRepository,
+            final CovidApiClient covidApiClient
+    ) {
         this.benchmarkRepository = benchmarkRepository;
         this.covidApiClient = covidApiClient;
     }
@@ -34,6 +35,7 @@ public class BenchmarkServiceImpl implements BenchmarkService {
      * a serem persistidos.
      */
     @Override
+    @Transactional
     public void saveBenchmark(final String benchmarkName,
                               final String firstCountry,
                               final String secondCountry) {
@@ -67,6 +69,22 @@ public class BenchmarkServiceImpl implements BenchmarkService {
                 });
             });
 
+            dataFirstCountry.getCases().forEach((dia, dto) -> {
+                resultadosDTO.getNewCases().computeIfAbsent(dia, newCases -> NovosCasosDTO.fromFirst(dto.getNewCases()));
+                resultadosDTO.getNewCases().computeIfPresent(dia, (k, v) -> {
+                    v.setNewCasesFirstCountry(dto.getNewCases());
+                    return v;
+                });
+            });
+
+            dataSecondCountry.getCases().forEach((dia, dto) -> {
+                resultadosDTO.getNewCases().computeIfAbsent(dia, newCases -> NovosCasosDTO.fromSecond(dto.getNewCases()));
+                resultadosDTO.getNewCases().computeIfPresent(dia, (k, v) -> {
+                    v.setNewCasesSecondCountry(dto.getNewCases());
+                    return v;
+                });
+            });
+
             //TODO: Criar método que busca, de uma única vez, das datas mínimas e máximas gerais
             // dos países -> mínimo e máximo entre dataFirstCountry e dataSecondCountry.
 
@@ -85,6 +103,38 @@ public class BenchmarkServiceImpl implements BenchmarkService {
         } catch (final Exception e) {
             log.error("Error: ", e);
         }
+    }
+
+    @Override
+    public Benchmark findByBenchmarkId(final Long id) {
+        final Benchmark benchmark = this.benchmarkRepository.findById(id)
+                .orElseThrow(() -> new BenchmarkNotFoundException(id));
+
+        return benchmark;
+    }
+
+    @Override
+    @Transactional
+    public void deleteBenchmark(final Long id) {
+        final boolean exists = this.benchmarkRepository.existsById(id);
+
+        if (!exists) {
+            throw new BenchmarkNotFoundException(id);
+        }
+
+        this.benchmarkRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public void updateBenchmark(final Long id, final String benchmarkName) {
+        final boolean exists = this.benchmarkRepository.existsById(id);
+
+        if (!exists) {
+            throw new BenchmarkNotFoundException(id);
+        }
+
+        this.benchmarkRepository.updateBenchmarkName(benchmarkName, id);
     }
 
 }
