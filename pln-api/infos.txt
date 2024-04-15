@@ -1,0 +1,18 @@
+A presente aplicação foi projetada utilizando Java 8, por ser a tecnologia base informada 
+na descrição da vaga.
+
+Para obter os dados da Covid e exibí-los na aplicação frontend foi necessário criar um 
+client que se comunicasse com a API externa.
+
+Realizando a requisição nas conformidades exigidas pela API externa, obtem-se os dados
+referentes aos filtros informados (seja país, seja data, tipo, etc).
+A partir do payload de resposta foi montada uma estrutura para poder persistir os dados
+obtidos na tabela de benchmark.
+Optou-se por uma tabela única, adicionando dependências a aplicação que permitissem salvar
+uma coluna no formato de JSON.
+
+Foram montados operações CRUD simples, com validações customizadas e a implementação de um
+handler global para tratar as exceções lançadas na aplicação, de forma padronizada.
+
+Para obter diretamente os endpoints da aplicação e executá-los em um REST Client (como o
+insomnia), basta importar o arquivo insomnia_requests.json.
