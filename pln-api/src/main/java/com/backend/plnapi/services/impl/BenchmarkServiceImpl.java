@@ -2,6 +2,7 @@ package com.backend.plnapi.services.impl;
 
 import com.backend.plnapi.clients.CovidApiClient;
 import com.backend.plnapi.dtos.*;
+import com.backend.plnapi.dtos.out.FilteredDataDTO;
 import com.backend.plnapi.exceptions.BenchmarkNotFoundException;
 import com.backend.plnapi.models.Benchmark;
 import com.backend.plnapi.repositories.BenchmarkRepository;
@@ -10,8 +11,11 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Map;
 
 @Log4j2
 @Service
@@ -111,6 +115,69 @@ public class BenchmarkServiceImpl implements BenchmarkService {
                 .orElseThrow(() -> new BenchmarkNotFoundException(id));
 
         return benchmark;
+    }
+
+    //TODO: refatorar método de modo a trazer cálculos com maior significado.
+    // Também realizar a filtragem através da query, como forma de melhorar a
+    // performance.
+    // Corrigir cálculo errado.
+    @Override
+    public FilteredDataDTO getFilteredData(
+            final Long id,
+            final LocalDate startDate,
+            final LocalDate endDate
+    ) {
+        final Benchmark benchmark = this.findByBenchmarkId(id);
+
+        final Map<String, NovosCasosDTO> newCases = benchmark.getResults().getNewCases();
+
+       final double sumNewCasesFirstCountry = newCases.entrySet().stream().filter(entry -> {
+            final LocalDate entryDate = LocalDate.parse(entry.getKey());
+            return entryDate.isEqual(startDate) || entryDate.isEqual(endDate) ||
+                    (entryDate.isAfter(startDate) && entryDate.isBefore(endDate));
+        })
+                .mapToDouble(entry -> entry.getValue().getNewCasesFirstCountry())
+                .sum();
+
+        final double sumNewCasesSecondCountry = newCases.entrySet().stream().filter(entry -> {
+                    final LocalDate entryDate = LocalDate.parse(entry.getKey());
+                    return entryDate.isEqual(startDate) || entryDate.isEqual(endDate) ||
+                            (entryDate.isAfter(startDate) && entryDate.isBefore(endDate));
+                })
+                .mapToDouble(entry -> entry.getValue().getNewCasesSecondCountry())
+                .sum();
+
+        final double sumNewCasesBenchmark = sumNewCasesFirstCountry + sumNewCasesSecondCountry;
+
+        final Map<String, TotalCasosDTO> totalCases = benchmark.getResults().getTotal();
+
+        final double sumTotalCasesFirstCountry = totalCases.entrySet().stream().filter(entry -> {
+                    final LocalDate entryDate = LocalDate.parse(entry.getKey());
+                    return entryDate.isEqual(startDate) || entryDate.isEqual(endDate) ||
+                            (entryDate.isAfter(startDate) && entryDate.isBefore(endDate));
+                })
+                .mapToDouble(entry -> entry.getValue().getTotalFirstCountry())
+                .sum();
+
+        final double sumTotalCasesSecondCountry = totalCases.entrySet().stream().filter(entry -> {
+                    final LocalDate entryDate = LocalDate.parse(entry.getKey());
+                    return entryDate.isEqual(startDate) || entryDate.isEqual(endDate) ||
+                            (entryDate.isAfter(startDate) && entryDate.isBefore(endDate));
+                })
+                .mapToDouble(entry -> entry.getValue().getTotalSecondCountry())
+                .sum();
+
+        final double sumTotalCasesBenchmark = sumTotalCasesFirstCountry + sumTotalCasesSecondCountry;
+
+        final FilteredDataDTO dto = FilteredDataDTO.builder()
+                .benchmarkName(benchmark.getBenchmarkName())
+                .startDate(startDate)
+                .endDate(endDate)
+                .sumNewCases(BigDecimal.valueOf(sumNewCasesBenchmark).toBigInteger())
+                .sumTotalCases(BigDecimal.valueOf(sumTotalCasesBenchmark).toBigInteger())
+                .build();
+
+        return dto;
     }
 
     @Override
