@@ -7,15 +7,15 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.testcontainers.containers.MongoDBContainer;
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class MongoIntegrationTestInitializer {
+public class IntegrationTestInitializer {
 
     @ClassRule
-    public static MongoDBContainer mongoDBContainer = MongoContainerConfig.getInstance();
+    public static PostgreSQLContainerConfig postgreSQLContainerConfig
+            = PostgreSQLContainerConfig.getInstance();
 
     @Test
     public void simpleAssertIntegrationTestInitializer() {
