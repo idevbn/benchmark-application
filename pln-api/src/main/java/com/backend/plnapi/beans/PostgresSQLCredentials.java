@@ -7,29 +7,24 @@ import org.springframework.stereotype.Component;
 
 /**
  * Classe utilizando padrão Singleton que instancia as
- * configurações de conexão com o banco de dados MongoDB.
+ * configurações de conexão com o banco de dados.
  */
 @Getter
 @Component
 @Scope("singleton")
-public class MongoDatabaseCredentials {
+public class PostgresSQLCredentials {
 
     private final String database;
-    private final String port;
-    private final String hostname;
-    private final String password;
     private final String username;
+    private final String password;
 
-    public MongoDatabaseCredentials(@Value("${spring.data.mongodb.database}") final String database,
-                                    @Value("${spring.data.mongodb.port}") final String port,
-                                    @Value("${spring.data.mongodb.host}")  final String hostname,
-                                    @Value("${spring.data.mongodb.password}") final String password,
-                                    @Value("${spring.data.mongodb.username}") final String username) {
+
+    public PostgresSQLCredentials(@Value("${spring.datasource.url}") final String database,
+                                  @Value("${spring.datasource.username}") final String username,
+                                  @Value("${spring.datasource.password}") final String password) {
         this.database = database;
-        this.port = port;
-        this.hostname = hostname;
-        this.password = password;
         this.username = username;
+        this.password = password;
     }
 
 }
