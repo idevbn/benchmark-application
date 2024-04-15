@@ -1,6 +1,6 @@
 package com.backend.plnapi.exceptionhandler;
 
-import com.backend.plnapi.exceptions.BenchmarkNameNotFoundException;
+import com.backend.plnapi.exceptions.BenchmarkNotFoundException;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
@@ -30,9 +30,9 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         this.messageSource = messageSource;
     }
 
-    @ExceptionHandler({BenchmarkNameNotFoundException.class})
-    public ResponseEntity<ApiError> handleBenchnameNotFoundException(
-            final BenchmarkNameNotFoundException ex
+    @ExceptionHandler({BenchmarkNotFoundException.class})
+    public ResponseEntity<ApiError> handleBenchmarkNameNotFoundException(
+            final BenchmarkNotFoundException ex
     ) {
         final String errorMsg = this.messageSource.getMessage(
                 ex.getErrorCode(),

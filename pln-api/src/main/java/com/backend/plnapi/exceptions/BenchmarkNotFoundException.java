@@ -5,11 +5,17 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 /**
- * Exceção disparada quando o nome de uma Benchmark não foi encontrado
+ * Exceção disparada quando uma benchmark não foi encontrado
  * na base de dados da aplicação.
  */
 @Getter
-public class BenchmarkNameNotFoundException extends RuntimeException implements HttpException {
+public class BenchmarkNotFoundException extends RuntimeException implements HttpException {
+
+    private final Long id;
+
+    public BenchmarkNotFoundException(final Long id) {
+        this.id = id;
+    }
 
     @Override
     public String getErrorCode() {
@@ -23,7 +29,7 @@ public class BenchmarkNameNotFoundException extends RuntimeException implements 
 
     @Override
     public Object[] getErrorMessageParams() {
-        return new Object[0];
+        return new String[]{this.getId().toString()};
     }
 
 }
