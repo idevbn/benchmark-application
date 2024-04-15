@@ -2,13 +2,16 @@ package com.backend.plnapi.controllers;
 
 import com.backend.plnapi.dtos.in.BenchmarkInputDTO;
 import com.backend.plnapi.dtos.in.BenchmarkUpdateDTO;
+import com.backend.plnapi.dtos.out.FilteredDataDTO;
 import com.backend.plnapi.models.Benchmark;
 import com.backend.plnapi.services.BenchmarkService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping(value = "/benchmark")
@@ -56,6 +59,20 @@ public class BenchmarkController {
     // exemplo, nos inputs de datas, assim como no nome da benchmark informado.
     // O processamento de filtragem deve considerar que os dados a serem filtrados estaão salvos
     // na base de dados com o formato de jsonb.
+
+    @GetMapping(value = "/filter/{id}")
+    public ResponseEntity<FilteredDataDTO> getFilteredDataFromBenchmark(
+            @PathVariable final Long id,
+            @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd")
+            final LocalDate startDate,
+            @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd")
+            final LocalDate endDate
+    ) {
+        final FilteredDataDTO filteredData = this.benchmarkService
+                .getFilteredData(id, startDate, endDate);
+
+        return ResponseEntity.status(HttpStatus.OK).body(filteredData);
+    }
 
     @PutMapping(value = "/{id}")
     public ResponseEntity<Void> updateBenchmarkName(
