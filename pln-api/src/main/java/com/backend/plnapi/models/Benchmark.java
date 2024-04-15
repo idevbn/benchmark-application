@@ -1,53 +1,83 @@
 package com.backend.plnapi.models;
 
 import com.backend.plnapi.dtos.ResultadosDTO;
-import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import org.hibernate.annotations.TypeDefs;
 
+import javax.persistence.*;
 import java.time.LocalDate;
 
+/**
+ * Entidade que representa a tabela tb_benchmark no banco de dados.
+ * A coluna 'results' é persistida diretamente como um tipo JSONB na
+ * base de dados.
+ */
 @Data
-@NoArgsConstructor(force = true)
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-@Document(collection = "benchmarks")
+@Entity
+@NoArgsConstructor
+@TypeDefs({
+        @TypeDef(name = "jsonb", typeClass = JsonBinaryType.class)
+})
+@Table(name = "tb_benchmark")
 public class Benchmark {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Field(name = "benchmark")
-    private final String benchMarkName;
+    @Column(name = "benchmark_name", nullable = false, unique = true)
+    private String benchmarkName;
 
-    @Field(name = "first_country_name")
-    private final String firstCountryName;
+    @Column(name = "first_country_name", nullable = false)
+    private String firstCountryName;
 
-    @Field(name = "second_country_name")
-    private final String secondCountryName;
+    @Column(name = "last_country_name", nullable = false)
+    private String lastCountryName;
 
-    @Field(name = "data_inicial")
-    private final LocalDate dataInicial;
+    @Column(name = "first_date", nullable = false)
+    private LocalDate firstDate;
 
-    @Field(name = "data_final")
-    private final LocalDate dataFinal;
+    @Column(name = "last_date", nullable = false)
+    private LocalDate lastDate;
 
-    @Field(name = "resultados")
-    private final ResultadosDTO resultados;
+    @Type(type = "jsonb")
+    @Column(name = "results", columnDefinition = "jsonb")
+    private ResultadosDTO results;
+
+    public Benchmark(
+            final String benchMarkName,
+            final String firstCountryName,
+            final String lastCountryName,
+            final LocalDate firstDate,
+            final LocalDate lastDate,
+            final ResultadosDTO results
+
+    ) {
+        this.benchmarkName = benchMarkName;
+        this.firstCountryName = firstCountryName;
+        this.lastCountryName = lastCountryName;
+        this.firstDate = firstDate;
+        this.lastDate = lastDate;
+        this.results = results;
+    }
 
     public static Benchmark of(final String benchMarkName,
                                final String firstCountryName,
-                               final String secondCountryName,
-                               final String dataInicial,
-                               final String dataFinal,
-                               final ResultadosDTO resultados) {
+                               final String lastCountryName,
+                               final String firstDate,
+                               final String lastDate,
+                               final ResultadosDTO results) {
         final Benchmark benchmark = new Benchmark(
                 benchMarkName,
                 firstCountryName,
-                secondCountryName,
-                LocalDate.parse(dataInicial),
-                LocalDate.parse(dataFinal),
-                resultados
+                lastCountryName,
+                LocalDate.parse(firstDate),
+                LocalDate.parse(lastDate),
+                results
         );
 
         return benchmark;
