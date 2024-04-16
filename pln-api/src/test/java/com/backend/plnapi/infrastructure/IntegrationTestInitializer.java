@@ -14,8 +14,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class IntegrationTestInitializer {
 
     @ClassRule
-    public static PostgreSQLContainerConfig postgreSQLContainerConfig
-            = PostgreSQLContainerConfig.getInstance();
+    public static PostgresSQLContainerConfig postgresSQLContainerConfig
+            = PostgresSQLContainerConfig.getInstance();
 
     @Test
     public void simpleAssertIntegrationTestInitializer() {
