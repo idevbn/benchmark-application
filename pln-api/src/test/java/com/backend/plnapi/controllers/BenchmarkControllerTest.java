@@ -1,6 +1,7 @@
 package com.backend.plnapi.controllers;
 
 import com.backend.plnapi.dtos.in.BenchmarkInputDTO;
+import com.backend.plnapi.exceptionhandler.ApiError;
 import com.backend.plnapi.infrastructure.IntegrationTestInitializer;
 import com.backend.plnapi.models.Benchmark;
 import org.junit.Test;
@@ -15,6 +16,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Classe na qual são realizados testes de integração referentes ao controller
@@ -65,6 +67,34 @@ public class BenchmarkControllerTest extends IntegrationTestInitializer {
         assertEquals(benchmarkName, inputDTO.getBenchmark());
         assertEquals(firstCountryName.toLowerCase(), inputDTO.getFirstCountryName());
         assertEquals(lastCountryName.toLowerCase(), inputDTO.getSecondCountryName());
+    }
+
+    @Test
+    @Sql(scripts = "/database/clear_database.sql")
+    public void shouldNotBeAbleToCreateBenchmarkWithCountriesOfSameName() {
+        final String resourceLocation = "/benchmark";
+
+        final BenchmarkInputDTO inputDTO = new BenchmarkInputDTO();
+        inputDTO.setBenchmark("brazil");
+        inputDTO.setFirstCountryName("brazil");
+        inputDTO.setSecondCountryName("brazil");
+
+        final HttpEntity<BenchmarkInputDTO> httpEntity = new HttpEntity<>(inputDTO);
+
+        final ResponseEntity<ApiError> response = this.testRestTemplate.exchange(
+                resourceLocation,
+                HttpMethod.POST,
+                httpEntity,
+                ApiError.class
+        );
+
+        assertNotNull(response);
+        assertNotNull(response.getBody());
+
+        final ApiError responseBody = response.getBody();
+
+        assertEquals(HttpStatus.BAD_REQUEST, responseBody.getStatus());
+        assertEquals("Os nomes dos países devem ser diferentes", responseBody.getErrors().get(0));
     }
 
 }
