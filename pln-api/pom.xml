@@ -62,6 +62,11 @@
 			<artifactId>hibernate-types-52</artifactId>
 			<version>2.3.4</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
