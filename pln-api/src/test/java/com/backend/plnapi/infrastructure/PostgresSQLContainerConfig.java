@@ -6,17 +6,19 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 @Profile("test")
 @TestConfiguration
-public class PostgreSQLContainerConfig extends PostgreSQLContainer<PostgreSQLContainerConfig> {
+public class PostgresSQLContainerConfig extends PostgreSQLContainer<PostgresSQLContainerConfig> {
 
     private static final String POSTGRES_IMAGE = "postgres:13.3";
+    private static final String DATABASE_NAME = "desafio_planisa";
 
-    private PostgreSQLContainerConfig() {
+    private PostgresSQLContainerConfig() {
         super(POSTGRES_IMAGE);
     }
 
-    public static PostgreSQLContainerConfig getInstance() {
-        return new PostgreSQLContainerConfig()
-                .withDatabaseName("desafio_planisa");
+    public static PostgresSQLContainerConfig getInstance() {
+        return new PostgresSQLContainerConfig()
+                .withDatabaseName(DATABASE_NAME)
+                .withInitScript("database/initial_commands.sql");
     }
 
     @Override
